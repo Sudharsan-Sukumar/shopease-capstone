@@ -194,3 +194,9 @@ app.Run();
 // Exposes the implicit top-level-statement Program class to the test
 // project's WebApplicationFactory<Program> - it's internal by default.
 public partial class Program;
+
+
+
+
+
+//test purpose for azure
