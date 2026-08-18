@@ -1,0 +1,68 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="text-center mb-4">
+      <h1 class="brand-title"><i class="bi bi-bag-heart-fill brand-icon"></i> ShopEase</h1>
+      <p class="brand-subtitle">Welcome back! Sign in to your account.</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="alert alert-info py-2 small mb-3">
+        <i class="bi bi-info-circle-fill"></i> Fields marked with <span class="text-danger fw-bold">*</span> are mandatory.
+      </div>
+
+      <div class="mb-3">
+        <label for="login-email" class="form-label">Email Address <span class="text-danger">*</span></label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+          <input
+            type="email"
+            class="form-control"
+            id="login-email"
+            formControlName="email"
+            [class.is-invalid]="f.email.invalid && f.email.touched"
+            placeholder="you@example.com"
+          />
+          <div class="invalid-feedback">Enter a valid email address.</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="login-password" class="form-label">Password <span class="text-danger">*</span></label>
+        <div class="input-group input-group-password">
+          <span class="input-group-text"><i class="bi bi-lock"></i></span>
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            class="form-control"
+            id="login-password"
+            formControlName="password"
+            [class.is-invalid]="f.password.invalid && f.password.touched"
+            placeholder="Enter password"
+          />
+          <span class="password-toggle" (click)="togglePassword()">
+            <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()"></i>
+          </span>
+          <div class="invalid-feedback">Password is required.</div>
+        </div>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+      <button type="submit" class="btn btn-shopease w-100 py-2 mb-3" [disabled]="submitting()">
+        <i class="bi bi-box-arrow-in-right"></i> {{ submitting() ? 'Signing in...' : 'Sign In' }}
+      </button>
+
+      <p class="text-center text-muted mb-0">
+        Don't have an account? <a routerLink="/register" class="text-primary fw-semibold">Register here</a>
+      </p>
+    </form>
+
+    <hr />
+    <div class="text-center">
+      <small class="text-muted">
+        <strong>Demo Accounts:</strong><br />
+        Admin: admin&#64;shopease.com / Admin&#64;123<br />
+        Customer: rahul&#64;email.com / Rahul&#64;123
+      </small>
+    </div>
+  </div>
+</div>

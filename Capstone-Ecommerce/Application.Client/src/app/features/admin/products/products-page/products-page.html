@@ -1,0 +1,118 @@
+<main class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/products">Home</a></li>
+      <li class="breadcrumb-item active">Manage Products</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-box-seam text-primary"></i> Manage Products</h2>
+    <button class="btn btn-shopease" (click)="toggleForm()">
+      <i class="bi" [class.bi-plus-lg]="!showForm()" [class.bi-x-lg]="showForm()"></i>
+      {{ showForm() ? 'Cancel' : 'New Product' }}
+    </button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage()">{{ successMessage() }}</div>
+  <div class="alert alert-danger alert-dismissible" *ngIf="errorMessage()">
+    {{ errorMessage() }}
+    <button type="button" class="btn-close" (click)="errorMessage.set('')"></button>
+  </div>
+
+  <div class="card mb-4" *ngIf="showForm()">
+    <div class="card-body">
+      <h5 class="card-title mb-3">{{ editingId() ? 'Edit Product' : 'New Product' }}</h5>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" formControlName="name" [class.is-invalid]="f.name.invalid && f.name.touched" />
+            <div class="invalid-feedback">Enter a name between 2 and 200 characters.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Category</label>
+            <select class="form-select" formControlName="categoryId" [class.is-invalid]="f.categoryId.invalid && f.categoryId.touched">
+              <option [value]="0" disabled>Select a category</option>
+              <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
+            </select>
+            <div class="invalid-feedback">Select a category.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Price (&#8377;)</label>
+            <input type="number" class="form-control" formControlName="price" min="0.01" step="0.01" [class.is-invalid]="f.price.invalid && f.price.touched" />
+            <div class="invalid-feedback">Enter a price greater than 0.</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Stock</label>
+            <input type="number" class="form-control" formControlName="stock" min="0" [class.is-invalid]="f.stock.invalid && f.stock.touched" />
+            <div class="invalid-feedback">Enter a stock quantity of 0 or more.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Image URL (optional)</label>
+            <input type="text" class="form-control" formControlName="imageUrl" placeholder="https://..." />
+          </div>
+          <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" rows="2" formControlName="description"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-shopease mt-3" [disabled]="saving()">
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="saving()"></span>
+          {{ editingId() ? 'Save Changes' : 'Add Product' }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="text-center py-5" *ngIf="loading()">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <div class="table-responsive" *ngIf="!loading()">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let product of products()" [class.table-secondary]="!product.isActive">
+          <td>{{ product.name }}</td>
+          <td>{{ product.categoryName }}</td>
+          <td>&#8377;{{ product.price | number: '1.0-0' }}</td>
+          <td class="fw-bold" [class.text-danger]="product.stock === 0" [class.text-warning]="product.stock > 0 && product.stock <= 10">{{ product.stock }}</td>
+          <td>
+            <span class="badge" [class.bg-success]="product.isActive" [class.bg-secondary]="!product.isActive">
+              {{ product.isActive ? 'Active' : 'Deactivated' }}
+            </span>
+          </td>
+          <td class="text-end">
+            <button class="btn btn-outline-primary btn-sm me-1" (click)="openEdit(product)"><i class="bi bi-pencil-square"></i> Edit</button>
+            <button
+              class="btn btn-sm"
+              [class.btn-outline-danger]="product.isActive"
+              [class.btn-outline-success]="!product.isActive"
+              (click)="toggleActive(product)"
+              [disabled]="togglingId() === product.id"
+            >
+              <span class="spinner-border spinner-border-sm" *ngIf="togglingId() === product.id"></span>
+              <ng-container *ngIf="togglingId() !== product.id">
+                <i class="bi" [class.bi-eye-slash]="product.isActive" [class.bi-arrow-counterclockwise]="!product.isActive"></i>
+                {{ product.isActive ? 'Deactivate' : 'Reactivate' }}
+              </ng-container>
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="products().length === 0">
+          <td colspan="6" class="text-center text-muted py-4">No products yet. Add one to get started.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</main>

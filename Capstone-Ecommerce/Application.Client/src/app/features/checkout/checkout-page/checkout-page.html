@@ -1,0 +1,54 @@
+<main class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/cart">Cart</a></li>
+      <li class="breadcrumb-item active">Checkout</li>
+    </ol>
+  </nav>
+
+  <h2 class="mb-4"><i class="bi bi-bag-check text-primary"></i> Checkout</h2>
+
+  <div class="empty-state" *ngIf="cart().items.length === 0">
+    <div class="empty-icon"><i class="bi bi-cart-x"></i></div>
+    <h5>Your cart is empty</h5>
+    <a routerLink="/products" class="btn btn-shopease mt-2"><i class="bi bi-grid"></i> Browse Products</a>
+  </div>
+
+  <div class="row g-4" *ngIf="cart().items.length > 0">
+    <div class="col-lg-8">
+      <div class="card mb-4">
+        <div class="card-header bg-white">
+          <h5 class="mb-0"><i class="bi bi-credit-card text-primary"></i> Payment</h5>
+        </div>
+        <div class="card-body">
+          <p class="mb-0 text-muted">
+            <i class="bi bi-info-circle"></i>
+            Payment is processed automatically through our (simulated) payment gateway when you place the order.
+            If the gateway is briefly unavailable, your order is still created as <strong>Payment Pending</strong>
+            and confirmed automatically once payment succeeds - check <a routerLink="/orders">My Orders</a> for status.
+          </p>
+        </div>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+      <button class="btn btn-shopease btn-lg w-100" (click)="placeOrder()" [disabled]="placingOrder()">
+        <i class="bi bi-bag-check"></i> {{ placingOrder() ? 'Placing order...' : 'Place Order' }}
+      </button>
+    </div>
+
+    <div class="col-lg-4">
+      <div class="cart-summary">
+        <h5 class="fw-bold mb-3"><i class="bi bi-receipt"></i> Order Summary</h5>
+        <div class="summary-row" *ngFor="let item of cart().items">
+          <span>{{ item.productName }} &times; {{ item.quantity }}</span>
+          <span>&#8377;{{ item.unitPrice * item.quantity | number: '1.0-0' }}</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>&#8377;{{ cart().total | number: '1.0-0' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

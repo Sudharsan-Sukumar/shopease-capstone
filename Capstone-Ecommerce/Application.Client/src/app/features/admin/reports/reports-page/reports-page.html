@@ -1,0 +1,139 @@
+<main class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/products">Home</a></li>
+      <li class="breadcrumb-item active">Reports</li>
+    </ol>
+  </nav>
+
+  <h2 class="mb-4"><i class="bi bi-clipboard-data text-primary"></i> Report Centre</h2>
+
+  <div class="alert alert-danger alert-dismissible" *ngIf="errorMessage()">
+    {{ errorMessage() }}
+    <button type="button" class="btn-close" (click)="errorMessage.set('')"></button>
+  </div>
+
+  <ul class="nav nav-tabs mb-4">
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'sales'" (click)="selectTab('sales')">
+        <i class="bi bi-graph-up-arrow"></i> Sales
+      </button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" [class.active]="activeTab() === 'inventory'" (click)="selectTab('inventory')">
+        <i class="bi bi-box-seam"></i> Inventory
+      </button>
+    </li>
+  </ul>
+
+  <!-- SALES -->
+  <div *ngIf="activeTab() === 'sales'">
+    <div class="filter-panel mb-3">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label">From Date</label>
+          <input type="date" class="form-control" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">To Date</label>
+          <input type="date" class="form-control" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)" />
+        </div>
+        <div class="col-md-6 d-flex gap-2">
+          <button class="btn btn-shopease" (click)="runSalesReport()"><i class="bi bi-play-fill"></i> Run Report</button>
+          <button class="btn btn-outline-secondary" (click)="clearRange()"><i class="bi bi-x-circle"></i> Clear</button>
+          <button class="btn btn-outline-success ms-auto" (click)="exportCsv()" [disabled]="exporting() || !salesReport()?.orders?.length">
+            <span class="spinner-border spinner-border-sm me-1" *ngIf="exporting()"></span>
+            <i class="bi bi-filetype-csv" *ngIf="!exporting()"></i> Export CSV
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-center py-5" *ngIf="loadingSales()">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <ng-container *ngIf="!loadingSales() && salesReport() as report">
+      <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+          <div class="kpi-card revenue"><div class="kpi-label">Total Revenue</div><div class="kpi-value">&#8377;{{ report.totalRevenue | number: '1.0-0' }}</div></div>
+        </div>
+        <div class="col-sm-4">
+          <div class="kpi-card orders"><div class="kpi-label">Orders</div><div class="kpi-value">{{ report.orderCount }}</div></div>
+        </div>
+        <div class="col-sm-4">
+          <div class="kpi-card customers"><div class="kpi-label">Avg Order Value</div><div class="kpi-value">&#8377;{{ report.averageOrderValue | number: '1.0-0' }}</div></div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover table-striped table-sm">
+          <thead class="table-dark">
+            <tr>
+              <th>Order #</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Items</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.orders">
+              <td class="fw-semibold">#{{ row.orderId }}</td>
+              <td>{{ row.customerEmail }}</td>
+              <td>{{ row.createdAtUtc | date: 'medium' }}</td>
+              <td><span class="badge bg-success">{{ row.status }}</span></td>
+              <td>{{ row.itemCount }}</td>
+              <td class="fw-bold">&#8377;{{ row.total | number: '1.0-0' }}</td>
+            </tr>
+            <tr *ngIf="report.orders.length === 0">
+              <td colspan="6" class="text-center text-muted py-4">No sales in this date range.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- INVENTORY -->
+  <div *ngIf="activeTab() === 'inventory'">
+    <div class="text-center py-5" *ngIf="loadingInventory()">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <ng-container *ngIf="!loadingInventory() && inventoryReport() as report">
+      <div class="row g-3 mb-4">
+        <div class="col-sm-6">
+          <div class="kpi-card products"><div class="kpi-label">Total Products</div><div class="kpi-value">{{ report.totalProducts }}</div></div>
+        </div>
+        <div class="col-sm-6">
+          <div class="kpi-card revenue"><div class="kpi-label">Total Stock Value</div><div class="kpi-value">&#8377;{{ report.totalStockValue | number: '1.0-0' }}</div></div>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover table-striped table-sm">
+          <thead class="table-dark">
+            <tr>
+              <th>Product</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Stock Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.products">
+              <td>{{ row.name }}</td>
+              <td>{{ row.categoryName }}</td>
+              <td>&#8377;{{ row.price | number: '1.0-0' }}</td>
+              <td class="fw-bold" [class.text-danger]="row.stock === 0">{{ row.stock }}</td>
+              <td>&#8377;{{ row.stockValue | number: '1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+  </div>
+</main>

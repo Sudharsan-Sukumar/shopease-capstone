@@ -1,0 +1,145 @@
+<main class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/products">Home</a></li>
+      <li class="breadcrumb-item active">Manage Users</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-people text-primary"></i> Manage Users</h2>
+    <button class="btn btn-shopease" (click)="toggleCreateForm()" *ngIf="canManageUsers()">
+      <i class="bi" [class.bi-plus-lg]="!showCreateForm()" [class.bi-x-lg]="showCreateForm()"></i>
+      {{ showCreateForm() ? 'Cancel' : 'New User' }}
+    </button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage()">{{ successMessage() }}</div>
+  <div class="alert alert-danger alert-dismissible" *ngIf="errorMessage()">
+    {{ errorMessage() }}
+    <button type="button" class="btn-close" (click)="errorMessage.set('')"></button>
+  </div>
+
+  <div class="card mb-4" *ngIf="showCreateForm()">
+    <div class="card-body">
+      <h5 class="card-title mb-3">Create New User</h5>
+      <form [formGroup]="createForm" (ngSubmit)="submitCreate()">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" formControlName="fullName" [class.is-invalid]="f.fullName.invalid && f.fullName.touched" />
+            <div class="invalid-feedback">Enter a name between 2 and 50 characters.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" formControlName="email" [class.is-invalid]="f.email.invalid && f.email.touched" />
+            <div class="invalid-feedback">Enter a valid email address.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Phone</label>
+            <input type="text" class="form-control" formControlName="phone" [class.is-invalid]="f.phone.invalid && f.phone.touched" />
+            <div class="invalid-feedback">Enter a valid 10-digit mobile number.</div>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" formControlName="password" [class.is-invalid]="f.password.invalid && f.password.touched" />
+            <div class="invalid-feedback">Needs an uppercase letter, lowercase letter, digit, and special character (6+ chars).</div>
+          </div>
+          <div class="col-12">
+            <label class="form-label d-block">Roles</label>
+            <div class="form-check form-check-inline" *ngFor="let role of createRoleOptions()">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                [id]="'create-role-' + role.id"
+                [checked]="createRoles().includes(role.name)"
+                (change)="toggleCreateRole(role.name, $any($event.target).checked)"
+              />
+              <label class="form-check-label" [for]="'create-role-' + role.id">{{ role.name }}</label>
+            </div>
+            <div class="form-text">This panel creates staff accounts only - customers always self-register.</div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-shopease mt-3" [disabled]="creating()">
+          <span class="spinner-border spinner-border-sm me-1" *ngIf="creating()"></span>
+          Create User
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="text-center py-5" *ngIf="loading()">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <div class="table-responsive" *ngIf="!loading()">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Full Name</th>
+          <th>Phone</th>
+          <th>Roles</th>
+          <th>Created</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let user of users()">
+          <tr>
+            <td>{{ user.email }}</td>
+            <td>{{ user.fullName }}</td>
+            <td>{{ user.phone }}</td>
+            <td>
+              <span
+                class="badge me-1"
+                [class.bg-warning]="role === 'Admin'"
+                [class.text-dark]="role === 'Admin'"
+                [class.bg-secondary]="role !== 'Admin'"
+                *ngFor="let role of user.roles"
+                >{{ role }}</span
+              >
+            </td>
+            <td>{{ user.createdAtUtc | date: 'mediumDate' }}</td>
+            <td class="text-end">
+              <button class="btn btn-outline-primary btn-sm me-1" (click)="toggleEditRoles(user)" *ngIf="canEditUser(user)">
+                <i class="bi bi-pencil-square"></i> {{ expandedUserId() === user.id ? 'Cancel' : 'Edit Roles' }}
+              </button>
+              <button
+                class="btn btn-outline-danger btn-sm"
+                (click)="revokeSessions(user)"
+                [disabled]="revokingUserId() === user.id"
+                *ngIf="canRevokeUser(user)"
+              >
+                <span class="spinner-border spinner-border-sm" *ngIf="revokingUserId() === user.id"></span>
+                <i class="bi bi-shield-x" *ngIf="revokingUserId() !== user.id"></i> Revoke Sessions
+              </button>
+              <span class="text-muted small" *ngIf="!canEditUser(user) && !canRevokeUser(user)">No actions available</span>
+            </td>
+          </tr>
+          <tr *ngIf="expandedUserId() === user.id">
+            <td colspan="6">
+              <div class="p-3 bg-light rounded">
+                <label class="form-label d-block">Roles for {{ user.email }}</label>
+                <div class="form-check form-check-inline" *ngFor="let role of editRoleOptions()">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [id]="'edit-role-' + user.id + '-' + role.id"
+                    [checked]="editRoles().includes(role.name)"
+                    (change)="toggleEditRole(role.name, $any($event.target).checked)"
+                  />
+                  <label class="form-check-label" [for]="'edit-role-' + user.id + '-' + role.id">{{ role.name }}</label>
+                </div>
+                <button class="btn btn-shopease btn-sm mt-2 d-block" (click)="saveRoles(user)" [disabled]="savingRoles()">
+                  <span class="spinner-border spinner-border-sm me-1" *ngIf="savingRoles()"></span>
+                  Save Roles
+                </button>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
+  </div>
+</main>

@@ -1,0 +1,124 @@
+<main class="container py-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item active">Home</li>
+      <li class="breadcrumb-item active">Product Catalog</li>
+    </ol>
+  </nav>
+
+  <h2 class="mb-4"><i class="bi bi-grid text-primary"></i> Product Catalog</h2>
+
+  <div class="row g-3 mb-4" *ngIf="banners().length > 0">
+    <div class="col-md-6" *ngFor="let banner of banners()">
+      <div class="promo-banner p-4 rounded text-white h-100">
+        <h5 class="fw-bold mb-1">{{ banner.title }}</h5>
+        <p class="mb-0">{{ banner.body }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-success" *ngIf="addedMessage()">{{ addedMessage() }}</div>
+  <div class="alert alert-danger" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+  <!-- Filter Panel -->
+  <div class="filter-panel">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label">
+          Search
+          <span class="text-muted small" *ngIf="searching()">&mdash; searching&hellip;</span>
+        </label>
+        <input type="text" class="form-control" [ngModel]="search()" (ngModelChange)="onSearchInput($event)" placeholder="Search products..." />
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Category</label>
+        <select class="form-select" [ngModel]="categoryId()" (ngModelChange)="categoryId.set($event)">
+          <option value="">All Categories</option>
+          <option *ngFor="let c of categories()" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Sort By</label>
+        <select class="form-select" [ngModel]="sortBy()" (ngModelChange)="sortBy.set($event)">
+          <option value="">Default</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name-asc">Name: A to Z</option>
+        </select>
+      </div>
+      <div class="col-md-1">
+        <label class="form-label">Min &#8377;</label>
+        <input type="number" class="form-control" [ngModel]="minPrice()" (ngModelChange)="minPrice.set($event)" placeholder="0" />
+      </div>
+      <div class="col-md-1">
+        <label class="form-label">Max &#8377;</label>
+        <input type="number" class="form-control" [ngModel]="maxPrice()" (ngModelChange)="maxPrice.set($event)" placeholder="Any" />
+      </div>
+      <div class="col-md-2">
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="filter-in-stock" [ngModel]="inStockOnly()" (ngModelChange)="inStockOnly.set($event)" />
+          <label class="form-check-label" for="filter-in-stock">In Stock Only</label>
+        </div>
+      </div>
+      <div class="col-md-1">
+        <button class="btn btn-clear-filter w-100" (click)="clearFilters()"><i class="bi bi-x-circle"></i> Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="text-muted mb-3" *ngIf="!loading()">Showing {{ paged().length }} of {{ filtered().length }} products</p>
+
+  <div class="text-center py-5" *ngIf="loading()">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <div class="row g-4" *ngIf="!loading()">
+    <div class="col-12" *ngIf="paged().length === 0">
+      <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-search"></i></div>
+        <h5>No products found</h5>
+        <p>Try adjusting your filters or search terms.</p>
+      </div>
+    </div>
+
+    <div class="col-sm-6 col-md-4 col-lg-3" *ngFor="let p of paged()">
+      <div class="card card-product h-100">
+        <div class="product-placeholder"><i class="bi bi-box-seam"></i></div>
+        <div class="card-body d-flex flex-column">
+          <span class="product-brand">{{ p.categoryName }}</span>
+          <h6 class="card-title mt-1">{{ p.name }}</h6>
+          <div class="mt-auto">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="product-price">&#8377;{{ p.price | number: '1.0-0' }}</span>
+              <span class="badge bg-success" *ngIf="p.stock > 0">In Stock ({{ p.stock }})</span>
+              <span class="badge bg-danger" *ngIf="p.stock <= 0">Out of Stock</span>
+            </div>
+            <div class="d-grid gap-2">
+              <a [routerLink]="['/products', p.id]" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-eye"></i> View Details
+              </a>
+              <button class="btn btn-add-cart btn-sm" [disabled]="p.stock <= 0" (click)="addToCart(p)">
+                <i class="bi bi-cart-plus"></i> Add to Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <nav class="pagination-wrapper" *ngIf="!loading() && totalPages() > 1">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" [class.disabled]="currentPage() === 1">
+        <button class="page-link" (click)="goToPage(currentPage() - 1)">&laquo;</button>
+      </li>
+      <li class="page-item" *ngFor="let page of [].constructor(totalPages()); let i = index" [class.active]="currentPage() === i + 1">
+        <button class="page-link" (click)="goToPage(i + 1)">{{ i + 1 }}</button>
+      </li>
+      <li class="page-item" [class.disabled]="currentPage() === totalPages()">
+        <button class="page-link" (click)="goToPage(currentPage() + 1)">&raquo;</button>
+      </li>
+    </ul>
+  </nav>
+</main>

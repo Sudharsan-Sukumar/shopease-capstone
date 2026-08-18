@@ -1,0 +1,30 @@
+<main class="container-fluid py-4 px-4">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a routerLink="/products">Home</a></li>
+      <li class="breadcrumb-item active">Dashboard</li>
+    </ol>
+  </nav>
+
+  <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="mb-0"><i class="bi bi-speedometer2 text-primary"></i> Admin Dashboard</h2>
+    <div class="d-flex gap-2 align-items-center">
+      <input type="date" class="form-control form-control-sm" [ngModel]="dateFrom()" (ngModelChange)="dateFrom.set($event)" title="From date" />
+      <span class="text-muted small">to</span>
+      <input type="date" class="form-control form-control-sm" [ngModel]="dateTo()" (ngModelChange)="dateTo.set($event)" title="To date" />
+      <button class="btn btn-shopease btn-sm" (click)="applyRange()"><i class="bi bi-funnel"></i> Apply</button>
+      <button class="btn btn-outline-secondary btn-sm" (click)="resetRange()" title="Reset to all time"><i class="bi bi-arrow-counterclockwise"></i></button>
+    </div>
+  </div>
+
+  <div class="text-center py-5" *ngIf="loading()">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+  <ng-container *ngIf="!loading() && summary()">
+    <app-widget-host [widgets]="kpiWidgets()" class="d-block mb-4"></app-widget-host>
+    <app-widget-host [widgets]="detailWidgets()" class="d-block"></app-widget-host>
+  </ng-container>
+</main>

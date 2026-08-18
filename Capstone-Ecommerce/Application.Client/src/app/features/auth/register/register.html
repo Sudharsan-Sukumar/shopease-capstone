@@ -1,0 +1,99 @@
+<div class="auth-wrapper">
+  <div class="auth-card" style="max-width: 500px">
+    <div class="text-center mb-4">
+      <h1 class="brand-title"><i class="bi bi-bag-heart-fill brand-icon"></i> ShopEase</h1>
+      <p class="brand-subtitle">Create your account to start shopping!</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="alert alert-info py-2 small mb-3">
+        <i class="bi bi-info-circle-fill"></i> Fields marked with <span class="text-danger fw-bold">*</span> are mandatory.
+      </div>
+
+      <div class="mb-3">
+        <label for="reg-name" class="form-label">Full Name <span class="text-danger">*</span></label>
+        <input
+          type="text"
+          class="form-control"
+          id="reg-name"
+          formControlName="fullName"
+          [class.is-invalid]="f.fullName.invalid && f.fullName.touched"
+          placeholder="Enter your full name"
+        />
+        <div class="invalid-feedback">Name must be 2-50 characters.</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="reg-email" class="form-label">Email Address <span class="text-danger">*</span></label>
+        <input
+          type="email"
+          class="form-control"
+          id="reg-email"
+          formControlName="email"
+          [class.is-invalid]="f.email.invalid && f.email.touched"
+          placeholder="you@example.com"
+        />
+        <div class="invalid-feedback">Enter a valid email address.</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="reg-phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+        <input
+          type="tel"
+          class="form-control"
+          id="reg-phone"
+          formControlName="phone"
+          [class.is-invalid]="f.phone.invalid && f.phone.touched"
+          placeholder="9876543210"
+        />
+        <div class="invalid-feedback">Enter a valid Indian mobile number.</div>
+      </div>
+
+      <div class="mb-3">
+        <label for="reg-password" class="form-label">Password <span class="text-danger">*</span></label>
+        <div class="input-group-password">
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            class="form-control"
+            id="reg-password"
+            formControlName="password"
+            [class.is-invalid]="f.password.invalid && f.password.touched"
+            placeholder="Min 6 chars, upper, lower, digit, special"
+          />
+          <span class="password-toggle" (click)="showPassword.set(!showPassword())">
+            <i class="bi" [class.bi-eye]="!showPassword()" [class.bi-eye-slash]="showPassword()"></i>
+          </span>
+          <div class="invalid-feedback">Min 6 chars with uppercase, lowercase, digit, and special character.</div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="reg-confirm" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+        <div class="input-group-password">
+          <input
+            [type]="showConfirm() ? 'text' : 'password'"
+            class="form-control"
+            id="reg-confirm"
+            formControlName="confirmPassword"
+            [class.is-invalid]="(form.errors?.['mismatch'] || f.confirmPassword.invalid) && f.confirmPassword.touched"
+            placeholder="Re-enter your password"
+          />
+          <span class="password-toggle" (click)="showConfirm.set(!showConfirm())">
+            <i class="bi" [class.bi-eye]="!showConfirm()" [class.bi-eye-slash]="showConfirm()"></i>
+          </span>
+          <div class="invalid-feedback">Passwords do not match.</div>
+        </div>
+      </div>
+
+      <div class="alert alert-danger" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+
+      <button type="submit" class="btn btn-shopease w-100 py-2 mb-3" [disabled]="submitting()">
+        <i class="bi bi-person-plus"></i> {{ submitting() ? 'Creating account...' : 'Create Account' }}
+      </button>
+
+      <p class="text-center text-muted mb-0">
+        Already have an account? <a routerLink="/login" class="text-primary fw-semibold">Sign In</a>
+      </p>
+    </form>
+  </div>
+</div>
