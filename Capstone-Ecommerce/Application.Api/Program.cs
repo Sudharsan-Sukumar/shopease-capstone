@@ -77,15 +77,17 @@ builder.Services.AddScoped<RevocationRuleEngine>();
 
 var corsOrigin = builder.Configuration["Cors:AllowedOrigin"];
 
-Console.WriteLine($"CORS ORIGIN: {corsOrigin}");
+Console.WriteLine($"=== CORS ORIGIN: '{corsOrigin}' ===");
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(AngularClientCors, policy =>
+    {
         policy
             .WithOrigins(corsOrigin!)
             .AllowAnyHeader()
-            .AllowAnyMethod());
+            .AllowAnyMethod();
+    });
 });
 
 var jwt = builder.Configuration.GetSection("Jwt");
