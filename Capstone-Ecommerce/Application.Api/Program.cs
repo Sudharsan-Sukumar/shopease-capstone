@@ -75,14 +75,17 @@ builder.Services.AddScoped<IRevocationRule, RoleChangedRule>();
 builder.Services.AddScoped<IRevocationRule, ManualAdminRevokeRule>();
 builder.Services.AddScoped<RevocationRuleEngine>();
 
+var corsOrigin = builder.Configuration["Cors:AllowedOrigin"];
+
+Console.WriteLine($"CORS ORIGIN: {corsOrigin}");
+
 builder.Services.AddCors(options =>
 {
-    // Named policy, not AllowAnyOrigin - only the Angular dev server's
-    // exact origin can call this API.
     options.AddPolicy(AngularClientCors, policy =>
-        policy.WithOrigins(builder.Configuration["Cors:AllowedOrigin"]!)
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+        policy
+            .WithOrigins(corsOrigin!)
+            .AllowAnyHeader()
+            .AllowAnyMethod());
 });
 
 var jwt = builder.Configuration.GetSection("Jwt");
