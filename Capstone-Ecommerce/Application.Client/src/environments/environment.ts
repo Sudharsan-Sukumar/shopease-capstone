@@ -1,4 +1,4 @@
 export const environment = {
-  apiBaseUrl: 'https://shopease-capstone--api.azurewebsites.net',
+  apiBaseUrl: 'shopease-capstone--api-ezbeaxbjadcrcyfj.centralindia-01.azurewebsites.net',
 };
 
